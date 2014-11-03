@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- line endings: unix -*-
 """
 The code in this module is released under the MIT License, as follows.
 

@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*- line endings: unix -*-
 __author__ = 'quixadhal'
+
 import os
 import sys
 import log_system
