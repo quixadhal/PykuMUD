@@ -1,3 +1,26 @@
+"""
+The code in this module is released under the MIT License, as follows.
+
+Copyright (c) 2014 Chris Meshkin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+"""
 __author__ = 'quixadhal'
 
 import time
@@ -113,7 +136,6 @@ class TwoFactorAuth:
         token = self._raw_secret
         return '-'.join((token[0:4], token[4:8], token[8:12], token[12:16]))
 
-
     @secret.setter
     def secret(self, s: str):
         """
@@ -128,7 +150,6 @@ class TwoFactorAuth:
             s = s.replace('-', '')
         self._raw_secret = s.upper().rjust(16, 'A')[0:16]
         self._secret = base64.b32decode(self._raw_secret.encode())
-
 
     def __repr__(self):
         """
@@ -155,8 +176,9 @@ def random_base32_token(length: int=16, rng=random.SystemRandom(),
     :return: A 16-character base32 encoded token
     :rtype: str
     """
-    token = ''.join(rng.choice(charset) for i in range(length))
+    token = ''.join(rng.choice(charset) for _ in range(length))
     return '-'.join((token[0:4], token[4:8], token[8:12], token[12:16]))
+
 
 def to_json(self: TwoFactorAuth):
     """
@@ -171,6 +193,7 @@ def to_json(self: TwoFactorAuth):
     if isinstance(self, TwoFactorAuth):
         return {'__TwoFactorAuth__': True, 'secret': self._raw_secret}
     raise TypeError(repr(self) + " is not JSON serializable")
+
 
 def from_json(self: str):
     """
