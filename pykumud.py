@@ -1,17 +1,12 @@
 __author__ = 'quixadhal'
-import os, sys
+import os
+import sys
 import time
-import logging
+import log_system
 
-
-def boot_log(self, message, *args, **kws):
-    self._log(21, message, args, **kws)
 
 sys.path.append(os.getcwd())
-logging.basicConfig(format='%(asctime)s %(levelname)-8s %(module)16s| %(message)s', level=logging.DEBUG)
-logging.addLevelName(21, 'BOOT')
-logging.Logger.boot = boot_log
-logger = logging.getLogger()
+logger = log_system.init_logging()
 
 import sysutils
 

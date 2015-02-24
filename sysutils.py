@@ -3,8 +3,8 @@ __author__ = 'quixadhal'
 import psutil
 import time
 from datetime import datetime
-import logging
-logger = logging.getLogger()
+import log_system
+logger = log_system.init_logging()
 
 
 def sysTimeStamp(timeval):
