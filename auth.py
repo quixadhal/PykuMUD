@@ -31,9 +31,9 @@ import hashlib
 import base64
 import random
 import json
-import logging
+import log_system
 
-logger = logging.getLogger()
+logger = log_system.init_logging()
 
 
 class TwoFactorAuth:
@@ -63,6 +63,7 @@ class TwoFactorAuth:
     enter a 6 digit number, zero-padded.  This number can then be passed
     to the verify() method, which will return True or False.
     """
+
     def __init__(self, s: str='ABCDEFGHIJKLMNOP'):
         """
         Initializes the class with a secret key, using an application-wide

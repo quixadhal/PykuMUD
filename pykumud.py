@@ -13,7 +13,6 @@ from db_system import Option
 logger = log_system.init_logging()
 sys.path.append(os.getcwd())
 
-
 if __name__ == '__main__':
     logger.boot('System booting.')
     snapshot = sysutils.ResourceSnapshot()
