@@ -185,7 +185,7 @@ class ExampleThing(object):
 
     def __init__(self, template=None, **kwargs):
         super().__init__()
-        self.foo = True
+        self.foo = 'pfft'
         if kwargs:
             [setattr(self, k, copy.deepcopy(v)) for k, v in kwargs.items()]
         if template:
