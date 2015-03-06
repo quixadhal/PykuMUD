@@ -3,8 +3,9 @@ __author__ = 'quixadhal'
 
 import os
 import sys
-import log_system
 from peewee import *
+import log_system
+import serialization
 
 
 logger = log_system.init_logging()
@@ -26,6 +27,10 @@ def init_db():
     master_database.connect()
     if not Option.table_exists():
         master_database.create_tables([Option], True)
-        port = Option.create(name='port', val='4400')
+        port = Option.create(name='port', val=serialization.pack(4400))
+        o2 = Option.create(name='o2', val=serialization.pack('stuff'))
+        o3 = Option.create(name='o3', val=serialization.pack(False))
         port.save()
+        o2.save()
+        o3.save()
         logger.boot('Database initialized.')

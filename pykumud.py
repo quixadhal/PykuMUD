@@ -6,6 +6,7 @@ import sys
 import time
 import sysutils
 import log_system
+import serialization
 import db_system
 from db_system import Option
 
@@ -20,8 +21,16 @@ if __name__ == '__main__':
     db_system.init_db()
     snapshot = sysutils.ResourceSnapshot()
     logger.info(snapshot.log_data())
-    port = int(Option.get(Option.name == 'port').val)
+
+    port = serialization.unpack(Option.get(Option.name == 'port').val)
+    o2 = serialization.unpack(Option.get(Option.name == 'o2').val)
+    o3 = serialization.unpack(Option.get(Option.name == 'o3').val)
     logger.boot('Port number is %d', port)
+    logger.boot('o2 string is %s', o2)
+    logger.boot('o3 boolean is %s', o3)
+    if o3:
+        logger.boot('o3 is true')
+
     time.sleep(1)
     snapshot = sysutils.ResourceSnapshot()
     logger.info(snapshot.log_data())
