@@ -3,14 +3,16 @@ __author__ = 'quixadhal'
 
 import os
 import sys
-from peewee import *
+from datetime import datetime
+# from peewee import *
+from playhouse.migrate import *
 import log_system
-import serialization
 
 
 logger = log_system.init_logging()
 sys.path.append(os.getcwd())
 master_database = SqliteDatabase('pyku.db')
+db_migrator = SqliteMigrator(master_database)
 
 
 class DataBase(Model):
@@ -18,35 +20,43 @@ class DataBase(Model):
         database = master_database
 
 
-class Option(DataBase):
-    name = CharField(unique=True)
-    val = CharField()
-
-
-def init_db():
+def init_db(to_version: int):
+    from config import Version
     master_database.connect()
-    if not Option.table_exists():
-        master_database.create_tables([Option], True)
-        db_version = Option.create(name='db_version', val=serialization.pack(1))
-        port = Option.create(name='port', val=serialization.pack(4400))
-        o2 = Option.create(name='o2', val=serialization.pack('stuff'))
-        o3 = Option.create(name='o3', val=serialization.pack(False))
-        example = serialization.ExampleThing()
-        thing = Option.create(name='thing', val=serialization.pack(example))
-        db_version.save()
-        port.save()
-        o2.save()
-        o3.save()
-        thing.save()
-        logger.boot('Database initialized.')
+    if not Version.table_exists():
+        from config import Option
+        master_database.create_tables([Version, Option])
+        version = Version.create(name='database', number=1)
+        version.save()
+
+        options = Option()
+        options.date_created = datetime.now()
+        options.port = 4400
+        options.version = version.number
+        options.save()
+        logger.boot('Database version %d created and initialized.', version.number)
+
+    version = Version.get(Version.name == 'database')
+    if version.number < to_version:
+        if upgrade_db(version.number, to_version):
+            logger.boot('Database upgraded from version %d to version %d.', version.number, to_version)
+        else:
+            logger.critical('Upgrade code not provided for version %d to version %d migration!', version.number, to_version)
+            exit()
+    else:
+        logger.boot('Database version %d connected.', version.number)
 
 
 def upgrade_db(from_version: int, to_version: int):
+    from config import Version
     if from_version == 1:
-        shiny = Option.create(name='shiny', val=serialization.pack('all your base are belong to us'))
-        shiny.save()
-        db_version_obj = Option.get(Option.name == 'db_version')
-        db_version_obj.val = serialization.pack(to_version)
-        db_version_obj.save()
+        version = Version.get(Version.name == 'database')
+        version.number = to_version
+        version.save()
+        # Here is where we would make schema changes using the migrate() function, if needed.
+        from config import Option
+        options = Option.get()
+        options.version = to_version
+        options.save()
         return True
     return False

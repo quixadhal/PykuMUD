@@ -6,9 +6,8 @@ import sys
 import time
 import sysutils
 import log_system
-import serialization
 import db_system
-from db_system import Option
+from config import Option
 
 
 logger = log_system.init_logging()
@@ -19,31 +18,14 @@ if __name__ == '__main__':
     logger.boot('System booting.')
     snapshot = sysutils.ResourceSnapshot()
     logger.info(snapshot.log_data())
-    db_system.init_db()
+    db_system.init_db(code_version)
     snapshot = sysutils.ResourceSnapshot()
     logger.info(snapshot.log_data())
 
-    db_version = serialization.unpack(Option.get(Option.name == 'db_version').val)
-    logger.boot('Version number is %d', db_version)
+    options = Option.get()
 
-    if db_version < code_version:
-        logger.boot('Old database version, attempting to upgrade.')
-        if db_system.upgrade_db(db_version, code_version):
-            db_version = serialization.unpack(Option.get(Option.name == 'db_version').val)
-            logger.boot('Success!  New version is %d', db_version)
-
-    port = serialization.unpack(Option.get(Option.name == 'port').val)
-    o2 = serialization.unpack(Option.get(Option.name == 'o2').val)
-    o3 = serialization.unpack(Option.get(Option.name == 'o3').val)
-    example = serialization.unpack(Option.get(Option.name == 'thing').val)
-    shiny = serialization.unpack(Option.get(Option.name == 'shiny').val)
-    logger.boot('Port number is %d', port)
-    logger.boot('o2 string is %s', o2)
-    logger.boot('o3 boolean is %s', o3)
-    logger.boot('example.foo is %s', example.foo)
-    logger.boot('shiny is %s', shiny)
-    if o3:
-        logger.boot('o3 is true')
+    logger.boot('Using database version %d, created on %s', options.version, options.date_created)
+    logger.boot('Port number is %d', options.port)
 
     time.sleep(1)
     snapshot = sysutils.ResourceSnapshot()
