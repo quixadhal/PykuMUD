@@ -20,19 +20,24 @@ class DataBase(Model):
         database = master_database
 
 
+class Version(DataBase):
+    name = CharField(unique=True)
+    number = IntegerField()
+
+
 def init_db(to_version: int):
-    from config import Version
     master_database.connect()
     if not Version.table_exists():
         from config import Option
         master_database.create_tables([Version, Option])
-        version = Version.create(name='database', number=1)
+        version = Version.create(name='database', number=to_version)
         version.save()
 
         options = Option()
         options.date_created = datetime.now()
         options.port = 4400
-        options.version = version.number
+        options.version = to_version
+        options.wizlock = False
         options.save()
         logger.boot('Database version %d created and initialized.', version.number)
 
@@ -48,12 +53,17 @@ def init_db(to_version: int):
 
 
 def upgrade_db(from_version: int, to_version: int):
-    from config import Version
-    if from_version == 1:
+    if from_version < to_version:
         version = Version.get(Version.name == 'database')
         version.number = to_version
         version.save()
+
+    if from_version < 3:
         # Here is where we would make schema changes using the migrate() function, if needed.
+        wizlock_field = BooleanField(default=False)
+        migrate(db_migrator.add_column('option', 'wizlock', wizlock_field))
+
+    if from_version < to_version:
         from config import Option
         options = Option.get()
         options.version = to_version

@@ -8,12 +8,8 @@ from db_system import DataBase
 logger = log_system.init_logging()
 
 
-class Version(DataBase):
-    name = CharField(unique=True)
-    number = IntegerField()
-
-
 class Option(DataBase):
     date_created = DateTimeField()
     version = IntegerField()
     port = IntegerField()
+    wizlock = BooleanField(default=False)
