@@ -46,7 +46,8 @@ def init_db(to_version: int):
         if upgrade_db(version.number, to_version):
             logger.boot('Database upgraded from version %d to version %d.', version.number, to_version)
         else:
-            logger.critical('Upgrade code not provided for version %d to version %d migration!', version.number, to_version)
+            logger.critical('Upgrade code not provided for version %d to version %d migration!',
+                            version.number, to_version)
             exit()
     else:
         logger.boot('Database version %d connected.', version.number)
