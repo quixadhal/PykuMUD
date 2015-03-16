@@ -6,77 +6,49 @@ import sys
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker
+from alembic.migration import MigrationContext
+from alembic.config import Config
+from alembic.script import ScriptDirectory
+from alembic import command
 import log_system
-
+from config import Option
 
 logger = log_system.init_logging()
 sys.path.append(os.getcwd())
+DB_FILE = 'pyku.db'
+ALEMBIC_CONFIG = 'alembic.ini'
 
-Engine = create_engine('sqlite:///pykusa.db')
+Engine = create_engine('sqlite:///' + DB_FILE)
 DataBase = declarative_base()
 Session = sessionmaker(bind=Engine)
 
 
-class Version(DataBase):
-    __tablename__ = 'version'
-
-    name = Column(String, primary_key=True)
-    number = Column(Integer)
-
-
 def init_db(to_version: int):
     connection = Engine.connect()
-    if not Engine.dialect.has_table(connection, 'version'):
-        from config import Option
+    context = MigrationContext.configure(connection)
+    current_revision = context.get_current_revision()
+    logger.boot('Database revision: %s', current_revision)
+    if current_revision is None:
         DataBase.metadata.create_all(Engine)
         session = Session()
-        version = Version(name='database', number=to_version)
-        session.add(version)
         options = Option()
         options.date_created = datetime.now()
-        options.version = to_version
+        options.version = None
         options.port = 4400
         options.wizlock = False
         session.add(options)
         session.commit()
-        logger.boot('Database version %d created and initialized.', version.number)
+        logger.boot('Database created and initialized.')
 
-    session = Session()
-    version = session.query(Version).filter(Version.name == 'database').first()
-    if version.number < to_version:
-        if upgrade_db(version.number, to_version):
-            logger.boot('Database upgraded from version %d to version %d.', version.number, to_version)
-        else:
-            logger.critical('Upgrade code not provided for version %d to version %d migration!',
-                            version.number, to_version)
-            exit()
-    else:
-        logger.boot('Database version %d connected.', version.number)
-
-
-def upgrade_db(from_version: int, to_version: int):
-    if from_version < to_version:
+    config = Config(ALEMBIC_CONFIG)
+    script = ScriptDirectory.from_config(config)
+    head_revision = script.get_current_head()
+    if current_revision is None or current_revision != head_revision:
+        logger.boot('Upgrading database to version %s.', head_revision)
+        command.upgrade(config, 'head')
         session = Session()
-        version = session.query(Version).filter(Version.name == 'database').first()
-        version.number = to_version
-        session.add(version)
-        session.commit()
-
-    if from_version < 3:
-        # Here is where we would make schema changes using the migrate() function, if needed.
-        session = Session()
-        # SQLite doesn't have a boolean type, an integer of values 0 or 1 is mapped instead.
-        session.execute('ALTER TABLE option ADD COLUMN wizlock INTEGER DEFAULT=0')
-        session.commit()
-
-    if from_version < to_version:
-        from config import Option
-        session = Session()
-        options = session.query(Option).first()
-        options.version = to_version
+        options = Option()
+        options.version = head_revision
         session.add(options)
         session.commit()
-        return True
-    return False
