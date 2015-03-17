@@ -26,7 +26,7 @@ if __name__ == '__main__':
     session = Session()
     options = session.query(Option).first()
 
-    logger.boot('Using database version %d, created on %s', options.version, options.date_created)
+    logger.boot('Using database version %s, created on %s', options.version, options.date_created)
     logger.boot('Port number is %d', options.port)
     logger.boot('Wizlock is %s', options.wizlock)
 

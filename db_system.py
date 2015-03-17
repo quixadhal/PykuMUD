@@ -12,7 +12,6 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 from alembic import command
 import log_system
-from config import Option
 
 logger = log_system.init_logging()
 sys.path.append(os.getcwd())
@@ -20,7 +19,7 @@ DB_FILE = 'pyku.db'
 ALEMBIC_CONFIG = 'alembic.ini'
 
 Engine = create_engine('sqlite:///' + DB_FILE)
-DataBase = declarative_base()
+Base = declarative_base()
 Session = sessionmaker(bind=Engine)
 
 
@@ -30,7 +29,8 @@ def init_db(to_version: int):
     current_revision = context.get_current_revision()
     logger.boot('Database revision: %s', current_revision)
     if current_revision is None:
-        DataBase.metadata.create_all(Engine)
+        from config import Option
+        Base.metadata.create_all(Engine)
         session = Session()
         options = Option()
         options.date_created = datetime.now()
@@ -47,8 +47,9 @@ def init_db(to_version: int):
     if current_revision is None or current_revision != head_revision:
         logger.boot('Upgrading database to version %s.', head_revision)
         command.upgrade(config, 'head')
+        from config import Option
         session = Session()
-        options = Option()
+        options = session.query(Option).first()
         options.version = head_revision
         session.add(options)
         session.commit()
