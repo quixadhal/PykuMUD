@@ -7,6 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session
 from alembic.migration import MigrationContext
 from alembic.config import Config
 from alembic.script import ScriptDirectory
@@ -18,19 +19,20 @@ sys.path.append(os.getcwd())
 DB_FILE = 'pyku.db'
 ALEMBIC_CONFIG = 'alembic.ini'
 
-Engine = create_engine('sqlite:///' + DB_FILE)
-Base = declarative_base()
-Session = sessionmaker(bind=Engine)
+SQLEngine = create_engine('sqlite:///' + DB_FILE)
+DataBase = declarative_base()
+SessionFactory = sessionmaker(bind=SQLEngine)
+Session = scoped_session(SessionFactory)
 
 
-def init_db(to_version: int):
-    connection = Engine.connect()
+def init_db():
+    connection = SQLEngine.connect()
     context = MigrationContext.configure(connection)
     current_revision = context.get_current_revision()
     logger.boot('Database revision: %s', current_revision)
     if current_revision is None:
         from config import Option
-        Base.metadata.create_all(Engine)
+        DataBase.metadata.create_all(SQLEngine)
         session = Session()
         options = Option()
         options.date_created = datetime.now()
@@ -51,5 +53,4 @@ def init_db(to_version: int):
         session = Session()
         options = session.query(Option).first()
         options.version = head_revision
-        session.add(options)
         session.commit()

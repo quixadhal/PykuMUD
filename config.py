@@ -3,12 +3,12 @@ __author__ = 'quixadhal'
 
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 import log_system
-from db_system import Base
+from db_system import DataBase
 
 logger = log_system.init_logging()
 
 
-class Option(Base):
+class Option(DataBase):
     __tablename__ = 'option'
 
     date_created = Column(DateTime, primary_key=True)

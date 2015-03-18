@@ -11,13 +11,12 @@ import db_system
 
 logger = log_system.init_logging()
 sys.path.append(os.getcwd())
-code_version = 3
 
 if __name__ == '__main__':
     logger.boot('System booting.')
     snapshot = sysutils.ResourceSnapshot()
     logger.info(snapshot.log_data())
-    db_system.init_db(code_version)
+    db_system.init_db()
     snapshot = sysutils.ResourceSnapshot()
     logger.info(snapshot.log_data())
 
@@ -29,14 +28,6 @@ if __name__ == '__main__':
     logger.boot('Using database version %s, created on %s', options.version, options.date_created)
     logger.boot('Port number is %d', options.port)
     logger.boot('Wizlock is %s', options.wizlock)
-
-    logger.boot('testing changes to options')
-    opt2 = session.query(Option).first()
-    options.wizlock = True
-    session.commit()
-
-    logger.boot('Wizlock v1 is %s', options.wizlock)
-    logger.boot('Wizlock v2 is %s', opt2.wizlock)
 
     time.sleep(1)
     snapshot = sysutils.ResourceSnapshot()

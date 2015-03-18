@@ -22,8 +22,8 @@ sys.path.append(os.getcwd())
 import log_system
 logger = log_system.init_logging()
 
-from db_system import Base
-target_metadata = Base.metadata
+from db_system import DataBase
+target_metadata = DataBase.metadata
 
 
 # other values from the config, defined by the needs of env.py,
