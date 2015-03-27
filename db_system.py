@@ -31,20 +31,7 @@ def init_db():
     current_revision = context.get_current_revision()
     logger.boot('Database revision: %s', current_revision)
     if current_revision is None:
-        # from config import Option
-        # from pulse import Pulse
         DataBase.metadata.create_all(SQLEngine)
-        # session = Session()
-        # options = Option()
-        # pulse = Pulse()
-        # options.date_created = datetime.now()
-        # options.version = None
-        # options.port = 4400
-        # options.wizlock = False
-        # session.add(options)
-        # session.add(pulse)
-        # session.commit()
-        # logger.boot('Database created and initialized.')
 
     config = Config(ALEMBIC_CONFIG)
     script = ScriptDirectory.from_config(config)
