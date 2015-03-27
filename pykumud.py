@@ -7,29 +7,43 @@ import time
 import sysutils
 import log_system
 import db_system
+import miniboa
 
 
 logger = log_system.init_logging()
 sys.path.append(os.getcwd())
 
-if __name__ == '__main__':
-    logger.boot('System booting.')
-    snapshot = sysutils.ResourceSnapshot()
-    logger.info(snapshot.log_data())
-    db_system.init_db()
-    snapshot = sysutils.ResourceSnapshot()
-    logger.info(snapshot.log_data())
 
+def PykuMUD():
+    logger.boot('System booting.')
+    start_snapshot = sysutils.ResourceSnapshot()
+    logger.boot(start_snapshot.log_data())
+    db_system.init_db()
     from db_system import Session
     from config import Option
     session = Session()
     options = session.query(Option).first()
-
     logger.boot('Using database version %s, created on %s', options.version, options.date_created)
-    logger.boot('Port number is %d', options.port)
-    logger.boot('Wizlock is %s', options.wizlock)
+    from pulse import Pulse
+    pulse = session.query(Pulse).first()
+    server = miniboa.TelnetServer(port=options.port, timeout=0.0)
+    logger.boot('PykuMUD ready on port %d', options.port)
+    done = False
+    time_slice = pulse.width / 1000.0
+    while not done:
+        top_of_loop = time.time()
+        server.poll()
+        # process input
+        pulse.perform_updates()
+        time_spent = time.time() - top_of_loop
+        if time_spent < time_slice:
+            nap_time = time_slice - time_spent
+            if nap_time > 0.0:
+                time.sleep(nap_time)
+            else:
+                logger.warn('Exceeded time slice by %.3f seconds!', abs(nap_time))
 
-    time.sleep(1)
-    snapshot = sysutils.ResourceSnapshot()
-    logger.info(snapshot.log_data())
     logger.critical('System halted.')
+
+if __name__ == '__main__':
+    PykuMUD()
