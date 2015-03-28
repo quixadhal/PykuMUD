@@ -29,19 +29,17 @@ def PykuMUD():
     server = miniboa.TelnetServer(port=options.port, timeout=0.0)
     logger.boot('PykuMUD ready on port %d', options.port)
     done = False
-    time_slice = pulse.width / 1000.0
     while not done:
         top_of_loop = time.time()
         server.poll()
         # process input
         pulse.perform_updates()
         time_spent = time.time() - top_of_loop
-        if time_spent < time_slice:
-            nap_time = time_slice - time_spent
-            if nap_time > 0.0:
-                time.sleep(nap_time)
-            else:
-                logger.warn('Exceeded time slice by %.3f seconds!', abs(nap_time))
+        nap_time = pulse.width - time_spent
+        if nap_time > 0.0:
+            time.sleep(nap_time)
+        else:
+            logger.warn('Exceeded time slice by %.3f seconds!', abs(nap_time))
 
     logger.critical('System halted.')
 
