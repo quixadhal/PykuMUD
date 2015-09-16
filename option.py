@@ -16,3 +16,4 @@ class Option(DataBase):
     version = Column(String)
     port = Column(Integer, default=4400)
     wizlock = Column(Boolean, default=False)
+    hotboot = Column(Boolean, default=False)

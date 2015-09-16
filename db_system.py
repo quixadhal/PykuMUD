@@ -39,7 +39,7 @@ def init_db():
     if current_revision is None or current_revision != head_revision:
         logger.boot('Upgrading database to version %s.', head_revision)
         command.upgrade(config, 'head')
-        from config import Option
+        from option import Option
         session = Session()
         options = session.query(Option).first()
         if options is None:

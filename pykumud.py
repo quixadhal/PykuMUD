@@ -20,7 +20,7 @@ def PykuMUD():
     logger.boot(start_snapshot.log_data())
     db_system.init_db()
     from db_system import Session
-    from config import Option
+    from option import Option
     session = Session()
     options = session.query(Option).first()
     logger.boot('Using database version %s, created on %s', options.version, options.date_created)
@@ -28,6 +28,8 @@ def PykuMUD():
     pulse = session.query(Pulse).first()
     server = miniboa.TelnetServer(port=options.port, timeout=0.0)
     logger.boot('PykuMUD ready on port %d', options.port)
+    import web
+    web.start_web_server()
     done = False
     while not done:
         top_of_loop = time.time()

@@ -2,33 +2,58 @@
 __author__ = 'quixadhal'
 
 from enum import Enum
+from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import orm
 import log_system
 from miniboa import TelnetClient
+from db_system import DataBase, Session
 
 logger = log_system.init_logging()
 
 
 class LoginState(Enum):
-    connected = 1
-    at_menu = 2
+    disconnected = 1
+    connected = 2
+    at_menu = 3
 
 
-class Login(object):
-    client_list = dict()
+class Login(DataBase):
+    __tablename__ = 'login'
 
-    def __init__(self, client: TelnetClient):
-        if not isinstance(client, TelnetClient):
-            raise TypeError('Parameter must be a TelnetClient instance!')
-        self.client = client
-        self.state = LoginState.connected
+    descriptor = Column(Integer, primary_key=True)
+    remote_address = Column(String, nullable=True)
+    remote_port = Column(Integer, nullable=True)
+    user_id = Column(Integer, nullable=True)
+    character_id = Column(Integer, nullable=True)
+
+    def __init__(self):
+        self.client = None
+        self.state = LoginState.disconnected
+
+    @orm.reconstructor
+    def init_on_load(self):
+        if not hasattr(self, 'client'):
+            self.client = None
+        if not hasattr(self, 'state'):
+            self.state = LoginState.disconnected
 
     @classmethod
     def on_connect(cls, client: TelnetClient):
-        cls.client_list[client.fileno] = client
+        session = Session()
+        login = session.query(Login).filter(Login.descriptor == client.fileno).first()
+        if not login:
+            login = Login()
+            login.descriptor = client.fileno
+            login.client = client
+            login.state = LoginState.connected
+            session.add(login)
+            session.commit()
 
     @classmethod
     def on_disconnect(cls, client: TelnetClient):
-        try:
-            del cls.client_list[client.fileno]
-        except KeyError:
-            pass
+        session = Session()
+        login = session.query(Login).filter(Login.descriptor == client.fileno).first()
+        if login:
+            # session.delete(login)
+            login.state = LoginState.disconnected
+            session.commit()

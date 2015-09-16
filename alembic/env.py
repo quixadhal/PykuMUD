@@ -23,7 +23,7 @@ import log_system
 logger = log_system.init_logging()
 
 from db_system import DataBase
-from config import Option
+from option import Option
 from pulse import Pulse
 target_metadata = DataBase.metadata
 
