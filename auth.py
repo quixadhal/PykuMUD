@@ -74,6 +74,8 @@ class TwoFactorAuth:
         :return:
         :rtype:
         """
+        if ' ' in s:
+            s = s.replace(' ', '')
         if '-' in s:
             s = s.replace('-', '')
         self._raw_secret = s.upper().rjust(16, 'A')[0:16]
@@ -118,6 +120,11 @@ class TwoFactorAuth:
         """
         if isinstance(token, int):
             token = '%06d' % token
+        if isinstance(token, str):
+            if ' ' in token:
+                token = token.replace(' ', '')
+            if '-' in token:
+                token = token.replace('-', '')
         trials = [self.time_code(time.time() + offset) for offset in range(-30, 31, 30)]
         if token in trials:
             return True
@@ -148,6 +155,8 @@ class TwoFactorAuth:
         :return:
         :rtype:
         """
+        if ' ' in s:
+            s = s.replace(' ', '')
         if '-' in s:
             s = s.replace('-', '')
         self._raw_secret = s.upper().rjust(16, 'A')[0:16]
@@ -221,3 +230,20 @@ def from_json(self: str):
             else:
                 raise TypeError(repr(self) + " is not a valid TwoFactorAuth serialization")
     return self
+
+def TestMe():
+    authObj = TwoFactorAuth('appy l3en 3d7c jrru')
+    attempts = 3
+    while attempts > 0:
+        userInput = input("Authenticator code: ")
+        if not authObj.verify(userInput):
+            print("Invalid code.")
+            attempts -= 1
+        else:
+            print("Code accepted.")
+            break
+    else:
+        print("Authentication failure.")
+
+if __name__ == '__main__':
+    TestMe()
