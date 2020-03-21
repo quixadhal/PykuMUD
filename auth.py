@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*- line endings: unix -*-
 """
 The code in this module is released under the MIT License, as follows.
@@ -231,8 +232,9 @@ def from_json(self: str):
                 raise TypeError(repr(self) + " is not a valid TwoFactorAuth serialization")
     return self
 
-def TestMe():
-    authObj = TwoFactorAuth('appy l3en 3d7c jrru')
+def TestMe(code: str):
+    #authObj = TwoFactorAuth('appy l3en 3d7c jrru')
+    authObj = TwoFactorAuth(code)
     attempts = 3
     while attempts > 0:
         userInput = input("Authenticator code: ")
@@ -245,5 +247,27 @@ def TestMe():
     else:
         print("Authentication failure.")
 
+def Usage():
+    print("auth --code <16 digit authenticator code>")
+    sys.exit()
+
 if __name__ == '__main__':
-    TestMe()
+    import sys
+    import getopt
+
+    code = 'appy l3en 3d7c jrru'
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hc:", ["help", "code="])
+        for opt, arg in opts:
+            if opt in ["-h", "--help"]:
+                Usage()
+                sys.exit()
+            elif opt in ["-c", "--code"]:
+                code = arg
+    except getopt.GetoptError:
+        Usage()
+        sys.exit(2)
+
+    print("Using code: " + code)
+    TestMe(code)
